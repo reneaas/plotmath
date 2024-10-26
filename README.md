@@ -1,104 +1,97 @@
-# `signchart`
-`signchart` is a Python package for plotting sign charts for polynomial functions. It is designed to be simple to use to generate beautiful sign charts for polynomial functions.
+# `mathplot`
+`mathplot` is a Python package to automatically create textbook graphs of mathematical functions. 
 
 ## Basic examples
 
 ### Example 1
 
 ```python
-import signchart
+import plotmath
 
-f = "(x**2 + 1)**2 * (x - 1)**2 * (x + 1)"
 
-signchart.make_sign_chart(f=f, include_factors=True)
-signchart.savefig(
-    dirname="dirname",
-    fname="fname",
+def f(x):
+    return x**2 - x - 2
+
+
+fix, ax = plotmath.make_figure(
+    functions=[f],
 )
 
-signchart.show()
+plotmath.savefig(
+    dirname="../figures",
+    fname="example_1.svg",
+)
+
+plotmath.show()
 ```
 
-This will generate the following sign chart:
+This will generate the following figure:
 
-![sign chart](https://raw.githubusercontent.com/reneaas/signchart/refs/heads/main/examples/figures/example_1.svg)
+![plot math](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_1.svg)
 
 
 ### Example 2
 
 ```python
-import signchart
+import plotmath
+import numpy as np
 
-f = "x**2 - x - 6"
 
-signchart.make_sign_chart(
-    f=f,
-    include_factors=True,
-    color=True,  # Includes colored lines.
-    fn_name="g(x)",  # Names the function g(x)
+def f(x):
+    return x**2 * np.cos(x)
+
+
+fix, ax = plotmath.make_figure(
+    functions=[f],
+    xmin=-6,
+    xmax=6,
+    ymin=-12,
+    ymax=8,
 )
 
-signchart.savefig(
-    dirname="figures",
+plotmath.savefig(
+    dirname="../figures",
     fname="example_2.svg",
 )
 
-signchart.show()
+plotmath.show()
 ```
 
-This will generate the following sign chart:
+This will generate the following figure:
 
-![sign chart](https://raw.githubusercontent.com/reneaas/signchart/refs/heads/main/examples/figures/example_2.svg)
+![plot math](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_2.svg)
 
 ### Example 3
 
 ```python
-import signchart
+import plotmath
 
-f = "-2 * x**2 + 2 * x + 12"
 
-signchart.make_sign_chart(
-    f=f,
-    include_factors=True,
-    color=True,  # Includes colored lines.
-    fn_name="h(x)",  # Names the function h(x)
+def f(x):
+    return x**2 - 4
+
+
+def g(x):
+    return x + 2
+
+
+fix, ax = plotmath.make_figure(
+    functions=[f, g],
+    xmin=-6,
+    xmax=6,
+    ymin=-6,
+    ymax=6,
 )
 
-signchart.savefig(
-    dirname="figures",
+plotmath.savefig(
+    dirname="../figures",
     fname="example_3.svg",
 )
 
-signchart.show()
+plotmath.show()
 ```
 
-This will generate the following sign chart:
+This will generate the following figure:
 
-![sign chart](https://raw.githubusercontent.com/reneaas/signchart/refs/heads/main/examples/figures/example_3.svg)
+![plot math](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_3.svg)
 
-
-### Example 4
-
-```python
-import signchart
-
-f = "-3 * (t - 1) * (t + 3)"  # Uses 't' as variable in place of 'x'
-
-signchart.make_sign_chart(
-    f=f,
-    include_factors=False,  # excludes linear factors in the polynomial
-    color=False,  # sign lines are black (uncolored)
-    fn_name="x(t)",  # Names the function x(t)
-)
-
-signchart.savefig(
-    dirname="figures",
-    fname="example_4.svg",
-)
-
-signchart.show()
-```
-
-This will generate the following sign chart:
-
-![sign chart](https://raw.githubusercontent.com/reneaas/signchart/refs/heads/main/examples/figures/example_4.svg)
