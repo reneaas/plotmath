@@ -27,8 +27,7 @@ plotmath.show()
 
 This will generate the following figure:
 
-![plot math](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_1.svg)
-
+![figure 1](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_1.svg)
 
 ### Example 2
 
@@ -59,7 +58,7 @@ plotmath.show()
 
 This will generate the following figure:
 
-![plot math](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_2.svg)
+![figure 2](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_2.svg)
 
 ### Example 3
 
@@ -93,5 +92,5 @@ plotmath.show()
 
 This will generate the following figure:
 
-![plot math](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_3.svg)
+![figure 3](https://raw.githubusercontent.com/reneaas/plotmath/refs/heads/main/examples/figures/example_3.svg)
 
