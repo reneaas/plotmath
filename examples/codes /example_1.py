@@ -5,7 +5,7 @@ def f(x):
     return x**2 - x - 2
 
 
-fix, ax = plotmath.make_figure(
+fix, ax = plotmath.plot(
     functions=[f],
 )
 

@@ -6,7 +6,7 @@ def f(x):
     return x**2 * np.cos(x)
 
 
-fix, ax = plotmath.make_figure(
+fix, ax = plotmath.plot(
     functions=[f],
     xmin=-6,
     xmax=6,

@@ -13,7 +13,7 @@ def f(x):
     return x**2 - x - 2
 
 
-fix, ax = plotmath.make_figure(
+fix, ax = plotmath.plot(
     functions=[f],
 )
 
@@ -40,7 +40,7 @@ def f(x):
     return x**2 * np.cos(x)
 
 
-fix, ax = plotmath.make_figure(
+fix, ax = plotmath.plot(
     functions=[f],
     xmin=-6,
     xmax=6,
@@ -74,7 +74,7 @@ def g(x):
     return x + 2
 
 
-fix, ax = plotmath.make_figure(
+fix, ax = plotmath.plot(
     functions=[f, g],
     xmin=-6,
     xmax=6,

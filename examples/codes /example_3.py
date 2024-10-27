@@ -9,7 +9,7 @@ def g(x):
     return x + 2
 
 
-fix, ax = plotmath.make_figure(
+fix, ax = plotmath.plot(
     functions=[f, g],
     xmin=-6,
     xmax=6,

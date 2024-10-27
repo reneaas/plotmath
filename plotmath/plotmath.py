@@ -82,7 +82,7 @@ def _set_ticks(xmin, xmax, ymin, ymax):
     return None
 
 
-def make_figure(
+def plot(
     functions,
     fn_labels=True,
     xmin=-5,
