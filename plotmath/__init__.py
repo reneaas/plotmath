@@ -1,3 +1,3 @@
-from .plotmath import make_figure, show, savefig
+from .plotmath import plot, show, savefig
 
-__all__ = ["make_figure", "savefig", "show"]
+__all__ = ["plot", "savefig", "show"]
