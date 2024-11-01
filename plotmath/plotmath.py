@@ -3,22 +3,34 @@ import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+import platform
 import warnings
 
-# Attempt to enable LaTeX rendering
-try:
-    plt.rc("text", usetex=True)
-    # Test rendering a simple LaTeX expression
-    fig, ax = plt.subplots()
-    ax.text(0.5, 0.5, r"$E=mc^2$", fontsize=12)
-    plt.close(fig)  # Close the figure as it's only for testing
-except (FileNotFoundError, RuntimeError):
+# Check if LaTeX is available
+if platform.system() == "Windows":
+    latex_available = shutil.which("latex.exe") is not None
+else:
+    latex_available = shutil.which("latex") is not None
+
+if latex_available:
+    try:
+        plt.rc("text", usetex=True)
+        # Test rendering a simple LaTeX expression
+        fig, ax = plt.subplots()
+        ax.text(0.5, 0.5, r"$E=mc^2$", fontsize=12)
+        plt.close(fig)  # Close the figure as it's only for testing
+    except (FileNotFoundError, RuntimeError):
+        plt.rc("text", usetex=False)
+        warnings.warn(
+            "LaTeX is not available. Falling back to Matplotlib's default text rendering.",
+            UserWarning,
+        )
+else:
     plt.rc("text", usetex=False)
-    # warnings.warn(
-    #     "LaTeX is not available. Falling back to Matplotlib's default text rendering.",
-    #     UserWarning,
-    # )
+    warnings.warn(
+        "LaTeX is not available. Falling back to Matplotlib's default text rendering.",
+        UserWarning,
+    )
 
 colors = ["#029386", "#C875C4", "#E50000", "blue", "purple", "orange"]
 # colors = np.random.permutation(colors)
@@ -120,7 +132,7 @@ def plot(
             tmp = [f(b) for f in functions]
         except:
             raise ValueError(
-                f"One of the provided functions is not defined on the default domain: {[a, b]}. Provide an approriate domain"
+                f"One of the provided functions is not defined on the default domain: {[a, b]}. Provide an appropriate domain"
             )
 
     x = np.linspace(a, b, 1024)
