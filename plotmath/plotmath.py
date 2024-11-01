@@ -13,12 +13,12 @@ try:
     fig, ax = plt.subplots()
     ax.text(0.5, 0.5, r"$E=mc^2$", fontsize=12)
     plt.close(fig)  # Close the figure as it's only for testing
-except Exception:
+except (FileNotFoundError, RuntimeError):
     plt.rc("text", usetex=False)
-    warnings.warn(
-        "LaTeX is not available. Falling back to Matplotlib's default text rendering.",
-        UserWarning,
-    )
+    # warnings.warn(
+    #     "LaTeX is not available. Falling back to Matplotlib's default text rendering.",
+    #     UserWarning,
+    # )
 
 colors = ["#029386", "#C875C4", "#E50000", "blue", "purple", "orange"]
 # colors = np.random.permutation(colors)
