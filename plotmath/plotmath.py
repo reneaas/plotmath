@@ -12,25 +12,15 @@ if platform.system() == "Windows":
 else:
     latex_available = shutil.which("latex") is not None
 
+
 if latex_available:
     try:
         plt.rc("text", usetex=True)
-        # Test rendering a simple LaTeX expression
-        fig, ax = plt.subplots()
-        ax.text(0.5, 0.5, r"$E=mc^2$", fontsize=12)
-        plt.close(fig)  # Close the figure as it's only for testing
     except (FileNotFoundError, RuntimeError):
         plt.rc("text", usetex=False)
-        warnings.warn(
-            "LaTeX is not available. Falling back to Matplotlib's default text rendering.",
-            UserWarning,
-        )
 else:
     plt.rc("text", usetex=False)
-    warnings.warn(
-        "LaTeX is not available. Falling back to Matplotlib's default text rendering.",
-        UserWarning,
-    )
+
 
 colors = ["#029386", "#C875C4", "#E50000", "blue", "purple", "orange"]
 # colors = np.random.permutation(colors)
