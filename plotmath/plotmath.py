@@ -115,8 +115,8 @@ def plot(
                 f"One of the provided functions is not defined on the provided domain: {domain}"
             )
     else:
-        a = -50
-        b = 50
+        a = -25
+        b = 25
         try:
             tmp = [f(a) for f in functions]
             tmp = [f(b) for f in functions]
@@ -125,7 +125,7 @@ def plot(
                 f"One of the provided functions is not defined on the default domain: {[a, b]}. Provide an appropriate domain"
             )
 
-    x = np.linspace(a, b, 1024)
+    x = np.linspace(a, b, int(2**12))
 
     if isinstance(fn_labels, bool) and fn_labels:  # If True, automatically set labels
         fn_labels = [f"${fn.__name__}$" for fn in functions]
