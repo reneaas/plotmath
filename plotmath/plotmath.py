@@ -160,3 +160,82 @@ def savefig(dirname, fname):
     plt.savefig(f"{dir}/{fname}")
 
     return None
+
+
+def histogram(
+    xmin,
+    frequencies,
+    binsizes,
+    xlabel=None,
+    ylabel=None,
+    rotation=0,
+    fontsize=16,
+    norwegian=True,
+):
+    heights = [f / b for f, b in zip(frequencies, binsizes)]
+    fig, ax = _get_figure_and_axis()
+
+    x = [xmin]
+    for i, binsize in enumerate(binsizes):
+        x.append(x[i] + binsize)
+
+    xticks = x[:]
+    if 0 in xticks:
+        xticks.remove(0)
+
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([f"${i}$" for i in xticks], fontsize=fontsize, rotation=0)
+
+    if ylabel:
+        ax.set_ylabel(
+            ylabel,
+            fontsize=fontsize,
+            rotation=0,
+            loc="top",
+        )
+    else:
+        if norwegian:
+            ax.set_ylabel(
+                r"$\displaystyle \frac{\mathrm{Frekvens}}{\mathrm{Klassebredde}}$",
+                fontsize=fontsize,
+                rotation=0,
+                loc="top",
+            )
+        else:
+            ax.set_ylabel(
+                r"$\displaystyle \frac{\mathrm{Frequency}}{\mathrm{Binsize}}$",
+                fontsize=fontsize,
+                rotation=0,
+                loc="top",
+            )
+
+    if xlabel:
+        ax.set_xlabel(xlabel, fontsize=16, loc="right")
+    else:
+        ax.set_xlabel(r"$x$", fontsize=16, loc="right")
+
+    plt.xlim(xmin - 1)
+
+    for i in range(len(x) - 1):
+        ax.plot(
+            [x[i], x[i + 1]], [heights[i], heights[i]], color="teal", lw=2, alpha=0.7
+        )
+        ax.plot([x[i], x[i]], [0, heights[i]], color="teal", lw=2, alpha=0.7)
+        ax.plot([x[i + 1], x[i + 1]], [0, heights[i]], color="teal", lw=2, alpha=0.7)
+
+        ax.fill(
+            [x[i], x[i + 1], x[i + 1], x[i]],
+            [0, 0, heights[i], heights[i]],
+            color="teal",
+            alpha=0.3,
+        )
+
+    ax.grid(False)
+
+    plt.subplots_adjust(
+        left=0.2,
+        bottom=0.068,
+        top=0.885,
+    )
+
+    return fig, ax
