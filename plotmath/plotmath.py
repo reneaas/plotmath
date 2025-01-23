@@ -188,7 +188,7 @@ def histogram(
 
     yticks = list(np.arange(1, max(heights) + 1, 1))
     ax.set_yticks(yticks)
-    ax.set_yticklabels([f"${i}$" for i in yticks], fontsize=fontsize, rotation=0)
+    ax.set_yticklabels([f"${int(i)}$" for i in yticks], fontsize=fontsize, rotation=0)
 
     if ylabel:
         ax.set_ylabel(
@@ -238,7 +238,7 @@ def histogram(
     ax.grid(False)
 
     plt.subplots_adjust(
-        left=0.2,
+        left=0.25,
         bottom=0.068,
         top=0.885,
     )
