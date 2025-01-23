@@ -186,6 +186,10 @@ def histogram(
     ax.set_xticks(xticks)
     ax.set_xticklabels([f"${i}$" for i in xticks], fontsize=fontsize, rotation=0)
 
+    yticks = list(np.arange(1, max(heights) + 1, 1))
+    ax.set_yticks(yticks)
+    ax.set_yticklabels([f"${i}$" for i in yticks], fontsize=fontsize, rotation=0)
+
     if ylabel:
         ax.set_ylabel(
             ylabel,
@@ -215,6 +219,7 @@ def histogram(
         ax.set_xlabel(r"$x$", fontsize=16, loc="right")
 
     plt.xlim(-1, x[-1] + 4)
+    plt.ylim(-0.5, max(heights) + 1)
 
     for i in range(len(x) - 1):
         ax.plot(
