@@ -214,7 +214,7 @@ def histogram(
     else:
         ax.set_xlabel(r"$x$", fontsize=16, loc="right")
 
-    plt.xlim(xmin - 1)
+    plt.xlim(-1, x[-1] + 4)
 
     for i in range(len(x) - 1):
         ax.plot(
