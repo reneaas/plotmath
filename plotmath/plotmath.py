@@ -47,35 +47,15 @@ def _get_figure_and_axis():
     return fig, ax
 
 
-def _set_ticks(xmin, xmax, ymin, ymax):
+def _set_ticks(xmin, xmax, ymin, ymax, xstep, ystep):
 
-    xticks = list(np.arange(xmin + 1, xmax, 1))
-    if len(xticks) > 10:
-        if xmin % 2 == 0:
-            xmin = xmin + 1
-        if xmax % 2 == 0:
-            xmax = xmax - 1
-
-        n_step = 1
-        while len(xticks) > 11:
-            n_step *= 2
-            xticks = list(np.arange(xmin + 1, xmax, n_step))
+    xticks = list(np.arange(xmin + 1, xmax, xstep))
 
     if 0 in xticks:
         xticks.remove(0)
     plt.xticks(xticks, fontsize=16)
 
-    yticks = list(np.arange(ymin + 1, ymax, 1))
-    if len(yticks) > 11:
-        if ymin % 2 == 0:
-            ymin = ymin + 1
-        if ymax % 2 == 0:
-            ymax = ymax - 1
-
-        n_step = 1
-        while len(yticks) > 10:
-            n_step *= 2
-            yticks = list(np.arange(ymin + 1, ymax, n_step))
+    yticks = list(np.arange(ymin + 1, ymax, ystep))
 
     if 0 in yticks:
         yticks.remove(0)
@@ -91,6 +71,8 @@ def plot(
     xmax=6,
     ymin=-6,
     ymax=6,
+    xstep=1,
+    ystep=1,
     ticks=True,
     alpha=0.7,
     grid=True,
@@ -99,33 +81,29 @@ def plot(
     fig, ax = _get_figure_and_axis()
 
     if ticks:
-        _set_ticks(xmin, xmax, ymin, ymax)
+        _set_ticks(
+            xmin=xmin,
+            xmax=xmax,
+            ymin=ymin,
+            ymax=ymax,
+            xstep=xstep,
+            ystep=ystep,
+        )
     else:
         plt.xticks([])
         plt.yticks([])
 
     # If domain is provided
-    if domain:
-        a, b = domain
-        try:
-            tmp = [f(a) for f in functions]
-            tmp = [f(b) for f in functions]
-        except:
-            raise ValueError(
-                f"One of the provided functions is not defined on the provided domain: {domain}"
-            )
-    else:
-        a = -25
-        b = 25
-        try:
-            tmp = [f(a) for f in functions]
-            tmp = [f(b) for f in functions]
-        except:
-            raise ValueError(
-                f"One of the provided functions is not defined on the default domain: {[a, b]}. Provide an appropriate domain"
-            )
+    domain = [xmin, xmax]
+    try:
+        tmp = [f(xmin) for f in functions]
+        tmp = [f(xmax) for f in functions]
+    except:
+        raise ValueError(
+            f"One of the provided functions is not defined on the provided domain: {domain}"
+        )
 
-    x = np.linspace(a, b, int(2**12))
+    x = np.linspace(xmin, xmax, int(2**12))
 
     if isinstance(fn_labels, bool) and fn_labels:  # If True, automatically set labels
         fn_labels = [f"${fn.__name__}$" for fn in functions]
