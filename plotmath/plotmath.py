@@ -49,13 +49,13 @@ def _get_figure_and_axis():
 
 def _set_ticks(xmin, xmax, ymin, ymax, xstep, ystep):
 
-    xticks = list(np.arange(xmin + 1, xmax, xstep))
+    xticks = list(np.arange(xmin, xmax, xstep))
 
     if 0 in xticks:
         xticks.remove(0)
     plt.xticks(xticks, fontsize=16)
 
-    yticks = list(np.arange(ymin + 1, ymax, ystep))
+    yticks = list(np.arange(ymin, ymax, ystep))
 
     if 0 in yticks:
         yticks.remove(0)
