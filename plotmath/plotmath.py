@@ -76,7 +76,6 @@ def plot(
     ticks=True,
     alpha=0.7,
     grid=True,
-    domain=None,
 ):
     fig, ax = _get_figure_and_axis()
 
@@ -93,15 +92,14 @@ def plot(
         plt.xticks([])
         plt.yticks([])
 
-    # If domain is provided
-    domain = [xmin, xmax]
-    try:
-        tmp = [f(xmin) for f in functions]
-        tmp = [f(xmax) for f in functions]
-    except:
-        raise ValueError(
-            f"One of the provided functions is not defined on the provided domain: {domain}"
-        )
+    # domain = [xmin, xmax]
+    # try:
+    #     tmp = [f(xmin) for f in functions]
+    #     tmp = [f(xmax) for f in functions]
+    # except:
+    #     raise ValueError(
+    #         f"One of the provided functions is not defined on the provided domain: {domain}"
+    #     )
 
     x = np.linspace(xmin, xmax, int(2**12))
 
