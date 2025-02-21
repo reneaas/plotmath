@@ -47,8 +47,8 @@ def _get_figure_and_axis():
     return fig, ax
 
 
-def _get_figures_and_axes(n, m):
-    figs, axes = plt.subplots(n, m)
+def _get_figures_and_axes(n, m, figsize):
+    figs, axes = plt.subplots(n, m, figsize=figsize)
     for ax in axes.flat:
         ax.spines["left"].set_position("zero")
         ax.spines["right"].set_color("none")
@@ -215,8 +215,9 @@ def multiplot(
     grid=True,
     rows=2,
     cols=2,
+    figsize=(8, 8),
 ):
-    figs, axes = _get_figures_and_axes(rows, cols)
+    figs, axes = _get_figures_and_axes(rows, cols, figsize)
 
     if ticks:
         axes = _set_multiple_ticks(
