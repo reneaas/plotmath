@@ -47,6 +47,23 @@ def _get_figure_and_axis():
     return fig, ax
 
 
+def _get_figures_and_axes(n, m):
+    figs, axes = plt.subplots(n, m)
+    for ax in axes:
+        ax.spines["left"].set_position("zero")
+        ax.spines["right"].set_color("none")
+        ax.spines["bottom"].set_position("zero")
+        ax.spines["top"].set_color("none")
+
+        ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
+        ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False)
+
+        ax.set_xlabel(r"$x$", fontsize=16, loc="right")
+        ax.set_ylabel(r"$y$", fontsize=16, loc="top", rotation="horizontal")
+
+    return figs, axes
+
+
 def _set_ticks(xmin, xmax, ymin, ymax, xstep, ystep):
 
     xticks = list(np.arange(xmin, xmax, xstep))
@@ -60,6 +77,27 @@ def _set_ticks(xmin, xmax, ymin, ymax, xstep, ystep):
     if 0 in yticks:
         yticks.remove(0)
     plt.yticks(yticks, fontsize=16)
+
+    return None
+
+
+def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes):
+    for ax in axes:
+        xticks = list(np.arange(xmin, xmax, xstep))
+
+        if 0 in xticks:
+            xticks.remove(0)
+        xticklabels = [f"${i}$" for i in xticks]
+        ax.set_xticks(xticks, fontsize=16)
+        ax.set_xticklabels(xticklabels, fontsize=16)
+
+        yticks = list(np.arange(ymin, ymax, ystep))
+
+        if 0 in yticks:
+            yticks.remove(0)
+        yticklabels = [f"${i}$" for i in yticks]
+        ax.set_yticks(yticks, fontsize=16)
+        ax.set_yticklabels(yticklabels, fontsize=16)
 
     return None
 
@@ -128,6 +166,64 @@ def plot(
     plt.tight_layout()
 
     return fig, ax
+
+
+def plot_multiple(
+    functions,
+    fn_labels=False,
+    xmin=-6,
+    xmax=6,
+    ymin=-6,
+    ymax=6,
+    xstep=1,
+    ystep=1,
+    ticks=True,
+    alpha=0.7,
+    grid=True,
+    rows=2,
+    cols=2,
+):
+    figs, axes = _get_figures_and_axes(rows, cols)
+
+    if ticks:
+        _set_multiple_ticks(
+            xmin=xmin,
+            xmax=xmax,
+            ymin=ymin,
+            ymax=ymax,
+            xstep=xstep,
+            ystep=ystep,
+            axes=axes,
+        )
+    else:
+        for ax in axes:
+            ax.set_xticks([])
+            ax.set_yticks([])
+
+    x = np.linspace(xmin, xmax, int(2**12))
+
+    if isinstance(fn_labels, bool) and fn_labels:  # If True, automatically set labels
+        fn_labels = [f"${fn.__name__}$" for fn in functions]
+    elif isinstance(fn_labels, bool) and not fn_labels:  # If False, disable labels
+        fn_labels = None
+    else:
+        fn_labels = [f"${label}$" for label in fn_labels]
+
+    for f, ax, label in zip(functions, axes, fn_labels):
+        ax.plot(x, f(x), lw=2, alpha=alpha, label=label)
+        ax.legend(fontsize=16)
+
+    for ax in axes:
+        ax.set_ylim(ymin, ymax)
+        ax.set_xlim(xmin, xmax)
+
+    if grid:
+        for ax in axes:
+            ax.grid(True, linestyle="--", alpha=0.6)
+
+    plt.tight_layout()
+
+    return figs, axes
 
 
 def savefig(dirname, fname):
