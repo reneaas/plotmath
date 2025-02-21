@@ -168,7 +168,7 @@ def plot(
     return fig, ax
 
 
-def plot_multiple(
+def multiplot(
     functions,
     fn_labels=False,
     xmin=-6,
