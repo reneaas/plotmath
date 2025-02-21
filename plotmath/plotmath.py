@@ -60,30 +60,6 @@ def _get_figures_and_axes(n, m, figsize):
 
         ax.set_xlabel(r"$x$", fontsize=16, loc="right")
         ax.set_ylabel(r"$y$", fontsize=16, loc="top", rotation="horizontal")
-    # for i in range(n):
-    #     for j in range(m):
-    #         axes[i, j].spines["left"].set_position("zero")
-    #         axes[i, j].spines["right"].set_color("none")
-    #         axes[i, j].spines["bottom"].set_position("zero")
-    #         axes[i, j].spines["top"].set_color("none")
-
-    #         axes[i, j].plot(
-    #             1,
-    #             0,
-    #             ">k",
-    #             transform=axes[i, j].get_yaxis_transform(),
-    #             clip_on=False,
-    #         )
-    #         axes[i, j].plot(
-    #             0,
-    #             1,
-    #             "^k",
-    #             transform=axes[i, j].get_xaxis_transform(),
-    #             clip_on=False,
-    #         )
-
-    #         axes[i, j].set_xlabel(r"$x$", fontsize=16, loc="right")
-    #         axes[i, j].set_ylabel(r"$y$", fontsize=16, loc="top", rotation="horizontal")
 
     return figs, axes
 
@@ -123,14 +99,6 @@ def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes):
 
         ax.set_yticks(yticks)
         ax.set_yticklabels(yticklabels, fontsize=16)
-
-    # for i in axes.shape[0]:
-    #     for j in axes.shape[1]:
-    #         axes[i, j].set_xticks(xticks)
-    #         axes[i, j].set_xticklabels(xticklabels, fontsize=16)
-
-    #         axes[i, j].set_yticks(yticks)
-    #         axes[i, j].set_yticklabels(yticklabels, fontsize=16)
 
     return axes
 
@@ -215,7 +183,7 @@ def multiplot(
     grid=True,
     rows=2,
     cols=2,
-    figsize=(8, 8),
+    figsize=(8, 6),
 ):
     figs, axes = _get_figures_and_axes(rows, cols, figsize)
 
