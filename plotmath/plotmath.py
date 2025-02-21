@@ -49,17 +49,30 @@ def _get_figure_and_axis():
 
 def _get_figures_and_axes(n, m):
     figs, axes = plt.subplots(n, m)
-    for ax in axes:
-        ax.spines["left"].set_position("zero")
-        ax.spines["right"].set_color("none")
-        ax.spines["bottom"].set_position("zero")
-        ax.spines["top"].set_color("none")
+    for i in range(n):
+        for j in range(m):
+            axes[i, j].spines["left"].set_position("zero")
+            axes[i, j].spines["right"].set_color("none")
+            axes[i, j].spines["bottom"].set_position("zero")
+            axes[i, j].spines["top"].set_color("none")
 
-        ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
-        ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False)
+            axes[i, j].plot(
+                1,
+                0,
+                ">k",
+                transform=axes[i, j].get_yaxis_transform(),
+                clip_on=False,
+            )
+            axes[i, j].plot(
+                0,
+                1,
+                "^k",
+                transform=axes[i, j].get_xaxis_transform(),
+                clip_on=False,
+            )
 
-        ax.set_xlabel(r"$x$", fontsize=16, loc="right")
-        ax.set_ylabel(r"$y$", fontsize=16, loc="top", rotation="horizontal")
+            axes[i, j].set_xlabel(r"$x$", fontsize=16, loc="right")
+            axes[i, j].set_ylabel(r"$y$", fontsize=16, loc="top", rotation="horizontal")
 
     return figs, axes
 
@@ -82,24 +95,26 @@ def _set_ticks(xmin, xmax, ymin, ymax, xstep, ystep):
 
 
 def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes):
-    for ax in axes:
-        xticks = list(np.arange(xmin, xmax, xstep))
+    xticks = list(np.arange(xmin, xmax, xstep))
+    if 0 in xticks:
+        xticks.remove(0)
+    xticklabels = [f"${i}$" for i in xticks]
 
-        if 0 in xticks:
-            xticks.remove(0)
-        xticklabels = [f"${i}$" for i in xticks]
-        ax.set_xticks(xticks, fontsize=16)
-        ax.set_xticklabels(xticklabels, fontsize=16)
+    yticks = list(np.arange(ymin, ymax, ystep))
+    if 0 in yticks:
+        yticks.remove(0)
 
-        yticks = list(np.arange(ymin, ymax, ystep))
+    yticklabels = [f"${i}$" for i in yticks]
 
-        if 0 in yticks:
-            yticks.remove(0)
-        yticklabels = [f"${i}$" for i in yticks]
-        ax.set_yticks(yticks, fontsize=16)
-        ax.set_yticklabels(yticklabels, fontsize=16)
+    for i in axes.shape[0]:
+        for j in axes.shape[1]:
+            axes[i, j].set_xticks(xticks)
+            axes[i, j].set_xticklabels(xticklabels, fontsize=16)
 
-    return None
+            axes[i, j].set_yticks(yticks)
+            axes[i, j].set_yticklabels(yticklabels, fontsize=16)
+
+    return axes
 
 
 def plot(
@@ -186,7 +201,7 @@ def multiplot(
     figs, axes = _get_figures_and_axes(rows, cols)
 
     if ticks:
-        _set_multiple_ticks(
+        axes = _set_multiple_ticks(
             xmin=xmin,
             xmax=xmax,
             ymin=ymin,
@@ -196,9 +211,11 @@ def multiplot(
             axes=axes,
         )
     else:
-        for ax in axes:
-            ax.set_xticks([])
-            ax.set_yticks([])
+        for i in axes.shape[0]:
+            for j in axes.shape[1]:
+                ax = axes[i, j]
+                ax.set_xticks([])
+                ax.set_yticks([])
 
     x = np.linspace(xmin, xmax, int(2**12))
 
@@ -209,16 +226,16 @@ def multiplot(
     else:
         fn_labels = [f"${label}$" for label in fn_labels]
 
-    for f, ax, label in zip(functions, axes, fn_labels):
+    for f, ax, label in zip(functions, axes.flat, fn_labels):
         ax.plot(x, f(x), lw=2, alpha=alpha, label=label)
         ax.legend(fontsize=16)
 
-    for ax in axes:
+    for ax in axes.flat:
         ax.set_ylim(ymin, ymax)
         ax.set_xlim(xmin, xmax)
 
     if grid:
-        for ax in axes:
+        for ax in axes.flat:
             ax.grid(True, linestyle="--", alpha=0.6)
 
     plt.tight_layout()
