@@ -335,3 +335,7 @@ def histogram(
     )
 
     return fig, ax
+
+
+def gca():
+    return plt.gca()
