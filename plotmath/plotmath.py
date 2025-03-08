@@ -236,14 +236,16 @@ def savefig(dirname, fname):
     return None
 
 
-def plot_polygon(*points, ax, color="teal", alpha=0.1):
+def plot_polygon(*points, ax, color="teal", alpha=0.1, show_vertices=False):
     points = [*points]
     points.append(points[0])
 
     x, y = zip(*points)
-    ax.fill(x, y, color=color, alpha=0.1)
+    ax.fill(x, y, color=color, alpha=alpha)
     ax.plot(x, y, color="black", alpha=1, lw=1.5)
-    ax.plot(x, y, "ko", markersize=8, alpha=0.7)
+
+    if show_vertices:
+        ax.plot(x, y, "ko", markersize=8, alpha=0.7)
 
     return None
 
