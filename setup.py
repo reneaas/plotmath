@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="plotmath",  # Replace with your desired package name
-    version="0.1.34",
+    version="0.2.0",
     author="René Alexander Ask",
     author_email="rene.ask@icloud.com",
     description="Automatically generates textbook graphs for mathematical functions.",

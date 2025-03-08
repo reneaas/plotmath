@@ -245,6 +245,7 @@ def plot_polygon(*points, ax, color="teal", alpha=0.1, show_vertices=False):
     ax.plot(x, y, color="black", alpha=1, lw=1.5)
 
     if show_vertices:
+        x, y = zip(*set(points))
         ax.plot(x, y, "ko", markersize=8, alpha=0.7)
 
     return None
