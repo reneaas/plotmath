@@ -236,9 +236,11 @@ def savefig(dirname, fname):
     return None
 
 
-def plot_polygon(*points, ax, color="teal", alpha=0.1, show_vertices=False):
+def plot_polygon(*points, ax=None, color="teal", alpha=0.1, show_vertices=False):
     points = [*points]
     points.append(points[0])
+    if ax is None:
+        ax = plt.gca()
 
     x, y = zip(*points)
     ax.fill(x, y, color=color, alpha=alpha)
