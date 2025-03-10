@@ -21,8 +21,8 @@ if latex_available:
 else:
     plt.rc("text", usetex=False)
 
-
-colors = ["#029386", "#C875C4", "#E50000", "blue", "purple", "orange"]
+teal = (0, 100 / 255, 140 / 255)
+colors = [teal, "#C875C4", "#E50000", "blue", "purple", "orange"]
 # colors = np.random.permutation(colors)
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
 
