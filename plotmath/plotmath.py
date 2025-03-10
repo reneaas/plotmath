@@ -236,7 +236,9 @@ def savefig(dirname, fname):
     return None
 
 
-def plot_polygon(*points, ax=None, color="teal", alpha=0.1, show_vertices=False):
+def plot_polygon(
+    *points, ax=None, color=(0, 100 / 225, 140 / 255), alpha=0.1, show_vertices=False
+):
     points = [*points]
     points.append(points[0])
     if ax is None:
