@@ -21,7 +21,8 @@ if latex_available:
 else:
     plt.rc("text", usetex=False)
 
-teal = (0, 100 / 255, 140 / 255)
+# teal = (0, 100 / 255, 140 / 255)
+teal = "teal"
 colors = [teal, "#C875C4", "#E50000", "blue", "purple", "orange"]
 # colors = np.random.permutation(colors)
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
@@ -237,7 +238,11 @@ def savefig(dirname, fname):
 
 
 def plot_polygon(
-    *points, ax=None, color=(0, 100 / 225, 140 / 255), alpha=0.1, show_vertices=False
+    *points,
+    ax=None,
+    color=(0, 100 / 225, 140 / 255),
+    alpha=0.1,
+    show_vertices=False,
 ):
     points = [*points]
     points.append(points[0])
