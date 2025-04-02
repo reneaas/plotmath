@@ -114,8 +114,9 @@ def plot(
     xstep=1,
     ystep=1,
     ticks=True,
-    alpha=0.7,
+    alpha=0.6,
     grid=True,
+    lw=2.5,
 ):
     fig, ax = _get_figure_and_axis()
 
@@ -151,13 +152,13 @@ def plot(
 
     if fn_labels is not None:
         for f, label in zip(functions, fn_labels):
-            ax.plot(x, f(x), lw=2, alpha=alpha, label=label)
+            ax.plot(x, f(x), lw=lw, alpha=alpha, label=label)
 
         ax.legend(fontsize=16)
 
     else:
         for f in functions:
-            ax.plot(x, f(x), lw=2, alpha=alpha)
+            ax.plot(x, f(x), lw=lw, alpha=alpha)
 
     plt.ylim(ymin, ymax)
     plt.xlim(xmin, xmax)
@@ -180,11 +181,12 @@ def multiplot(
     xstep=1,
     ystep=1,
     ticks=True,
-    alpha=0.7,
+    alpha=0.6,
     grid=True,
     rows=2,
     cols=2,
     figsize=(8, 6),
+    lw=2.5,
 ):
     figs, axes = _get_figures_and_axes(rows, cols, figsize)
 
@@ -213,7 +215,7 @@ def multiplot(
         fn_labels = [f"${label}$" for label in fn_labels]
 
     for f, ax, label in zip(functions, axes.flat, fn_labels):
-        ax.plot(x, f(x), lw=2, alpha=alpha, label=label)
+        ax.plot(x, f(x), lw=lw, alpha=alpha, label=label)
         ax.legend(fontsize=16)
 
     for ax in axes.flat:
@@ -269,6 +271,8 @@ def histogram(
     rotation=0,
     fontsize=16,
     norwegian=True,
+    lw=2.5,
+    alpha=0.6,
 ):
     heights = [f / b for f, b in zip(frequencies, binsizes)]
     fig, ax = _get_figure_and_axis()
@@ -321,10 +325,10 @@ def histogram(
 
     for i in range(len(x) - 1):
         ax.plot(
-            [x[i], x[i + 1]], [heights[i], heights[i]], color="teal", lw=2, alpha=0.7
+            [x[i], x[i + 1]], [heights[i], heights[i]], color="teal", lw=lw, alpha=alpha
         )
-        ax.plot([x[i], x[i]], [0, heights[i]], color="teal", lw=2, alpha=0.7)
-        ax.plot([x[i + 1], x[i + 1]], [0, heights[i]], color="teal", lw=2, alpha=0.7)
+        ax.plot([x[i], x[i]], [0, heights[i]], color="teal", lw=lw, alpha=alpha)
+        ax.plot([x[i + 1], x[i + 1]], [0, heights[i]], color="teal", lw=lw, alpha=alpha)
 
         ax.fill(
             [x[i], x[i + 1], x[i + 1], x[i]],
