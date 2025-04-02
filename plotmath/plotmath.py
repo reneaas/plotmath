@@ -117,6 +117,7 @@ def plot(
     alpha=0.6,
     grid=True,
     lw=2.5,
+    domain=False,
 ):
     fig, ax = _get_figure_and_axis()
 
@@ -142,7 +143,10 @@ def plot(
     #         f"One of the provided functions is not defined on the provided domain: {domain}"
     #     )
 
-    x = np.linspace(xmin, xmax, int(2**12))
+    if domain:
+        x = np.linspace(domain[0], domain[1], int(2**12))
+    else:
+        x = np.linspace(xmin, xmax, int(2**12))
 
     if isinstance(fn_labels, bool) and fn_labels:  # If True, automatically set labels
         fn_labels = [f"${fn.__name__}$" for fn in functions]
