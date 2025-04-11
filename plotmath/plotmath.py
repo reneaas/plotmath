@@ -21,8 +21,6 @@ if latex_available:
 else:
     plt.rc("text", usetex=False)
 
-# teal = (0, 100 / 255, 140 / 255)
-teal = "teal"
 colors = ["teal", "blue", "red", "blue", "purple", "orange"]
 # colors = np.random.permutation(colors)
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
@@ -114,7 +112,7 @@ def plot(
     xstep=1,
     ystep=1,
     ticks=True,
-    alpha=0.6,
+    alpha=0.8,
     grid=True,
     lw=2.5,
     domain=False,
