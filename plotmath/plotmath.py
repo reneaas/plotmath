@@ -21,7 +21,7 @@ if latex_available:
 else:
     plt.rc("text", usetex=False)
 
-colors = ["teal", "royalblue", "crimsomred", "darkorchid", "navy"]
+colors = ["teal", "royalblue", "crimson", "darkorchid", "navy"]
 # colors = np.random.permutation(colors)
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
 
