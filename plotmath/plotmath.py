@@ -21,8 +21,13 @@ if latex_available:
 else:
     plt.rc("text", usetex=False)
 
-colors = ["teal", "royalblue", "crimson", "darkorchid", "navy"]
-# colors = np.random.permutation(colors)
+red = (220 / 255, 94 / 255, 139 / 255)
+blue = "#0072B2"
+orange = (220 / 255, 80 / 255, 20 / 255, 0.9)
+skyblue = "#56B4E9"
+green = (0, 130 / 255, 90 / 255)
+colors = [blue, red, orange, skyblue, green]
+
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
 
 
@@ -112,7 +117,7 @@ def plot(
     xstep=1,
     ystep=1,
     ticks=True,
-    alpha=0.8,
+    alpha=None,
     grid=True,
     lw=2.5,
     domain=False,
@@ -131,15 +136,6 @@ def plot(
     else:
         plt.xticks([])
         plt.yticks([])
-
-    # domain = [xmin, xmax]
-    # try:
-    #     tmp = [f(xmin) for f in functions]
-    #     tmp = [f(xmax) for f in functions]
-    # except:
-    #     raise ValueError(
-    #         f"One of the provided functions is not defined on the provided domain: {domain}"
-    #     )
 
     if domain:
         x = np.linspace(domain[0], domain[1], int(2**12))
@@ -183,7 +179,7 @@ def multiplot(
     xstep=1,
     ystep=1,
     ticks=True,
-    alpha=0.6,
+    alpha=None,
     grid=True,
     rows=2,
     cols=2,
@@ -244,7 +240,7 @@ def savefig(dirname, fname):
 def plot_polygon(
     *points,
     ax=None,
-    color=(0, 100 / 225, 140 / 255),
+    color=blue,
     alpha=0.1,
     show_vertices=False,
 ):
