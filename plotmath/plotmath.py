@@ -21,8 +21,7 @@ if latex_available:
 else:
     plt.rc("text", usetex=False)
 
-# red = (220 / 255, 94 / 255, 139 / 255)
-red = "red"
+red = (220 / 255, 94 / 255, 139 / 255)
 blue = (0 / 255, 114 / 255, 178 / 255, 0.9)
 orange = (220 / 255, 80 / 255, 20 / 255, 0.9)
 skyblue = "#56B4E9"
