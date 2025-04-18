@@ -239,7 +239,7 @@ def multiplot(
     return figs, axes
 
 
-def savefig(dirname, fname, transparent=False):
+def savefig(dirname, fname, transparent=True):
     dir = pathlib.Path(dirname)
     dir.mkdir(parents=True, exist_ok=True)
     plt.savefig(f"{dir}/{fname}", transparent=transparent)
