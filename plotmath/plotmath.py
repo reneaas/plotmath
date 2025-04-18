@@ -36,7 +36,9 @@ def show():
 
 
 def _get_figure_and_axis():
+
     fig, ax = plt.subplots()
+
     ax.spines["left"].set_position("zero")
     ax.spines["right"].set_color("none")
     ax.spines["bottom"].set_position("zero")
@@ -229,10 +231,10 @@ def multiplot(
     return figs, axes
 
 
-def savefig(dirname, fname):
+def savefig(dirname, fname, transparent=False):
     dir = pathlib.Path(dirname)
     dir.mkdir(parents=True, exist_ok=True)
-    plt.savefig(f"{dir}/{fname}")
+    plt.savefig(f"{dir}/{fname}", transparent=transparent)
 
     return None
 
