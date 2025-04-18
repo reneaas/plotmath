@@ -28,6 +28,14 @@ skyblue = "#56B4E9"
 green = (0, 130 / 255, 90 / 255)
 colors = [blue, red, orange, skyblue, green]
 
+COLORS = {
+    "blue": blue,
+    "red": red,
+    "orange": orange,
+    "skyblue": skyblue,
+    "green": green,
+}
+
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
 
 
