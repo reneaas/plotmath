@@ -26,7 +26,7 @@ blue = (0 / 255, 114 / 255, 178 / 255, 0.9)
 orange = (220 / 255, 80 / 255, 20 / 255, 0.9)
 skyblue = "#56B4E9"
 green = (0, 130 / 255, 90 / 255)
-colors = [blue, red, orange, skyblue, green]
+colors = [blue, red, green, skyblue, orange]
 
 COLORS = {
     "blue": blue,
