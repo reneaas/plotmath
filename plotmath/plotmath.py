@@ -254,6 +254,7 @@ def plot_polygon(
     alpha=0.05,
     show_vertices=False,
     ls="-",
+    edges=True,
 ):
     points = [*points]
     points.append(points[0])
@@ -262,7 +263,8 @@ def plot_polygon(
 
     x, y = zip(*points)
     ax.fill(x, y, color=color, alpha=alpha)
-    ax.plot(x, y, color="black", alpha=1, lw=1.5, ls=ls)
+    if edges:
+        ax.plot(x, y, color="black", alpha=1, lw=1.5, ls=ls)
 
     if show_vertices:
         x, y = zip(*set(points))
