@@ -29,7 +29,11 @@ skyblue = "#D3E6F6"  # udir blue
 # green = (0, 130 / 255, 90 / 255)
 # green = "#DDF1E7"  # udir green
 green = "#BBE3CE"  # udir green (deeper)
-colors = [blue, red, green, skyblue, orange]
+common = "#26A69A"
+rare = "#1E88E5"
+epic = "#9C27B0"
+legendary = "#FFA000"
+colors = [blue, red, green, skyblue, orange, common, rare, epic, legendary]
 
 COLORS = {
     "blue": blue,
@@ -37,6 +41,10 @@ COLORS = {
     "orange": orange,
     "skyblue": skyblue,
     "green": green,
+    "common": common,
+    "rare": rare,
+    "epic": epic,
+    "legendary": legendary,
 }
 
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
