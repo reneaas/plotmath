@@ -45,7 +45,9 @@ fix, ax = plotmath.plot(
     xmin=-6,
     xmax=6,
     ymin=-12,
-    ymax=8,
+    ymax=12,
+    xstep=1,
+    ystep=2,
 )
 
 plotmath.savefig(
