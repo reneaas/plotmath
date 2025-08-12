@@ -22,8 +22,8 @@ else:
     plt.rc("text", usetex=False)
 
 red = (220 / 255, 94 / 255, 139 / 255)
-blue = (0 / 255, 114 / 255, 178 / 255, 0.9)
-orange = (220 / 255, 80 / 255, 20 / 255, 0.9)
+blue = (0 / 255, 114 / 255, 178 / 255)
+orange = (220 / 255, 80 / 255, 20 / 255)
 # skyblue = "#56B4E9"
 skyblue = "#D3E6F6"  # udir blue
 # green = (0, 130 / 255, 90 / 255)
@@ -142,8 +142,13 @@ def plot(
     grid=True,
     lw=2.5,
     domain=False,
+    fontsize=20,
+    figsize=None,
 ):
     fig, ax = _get_figure_and_axis()
+
+    if figsize is not None:
+        fig.set_size_inches(figsize)
 
     if ticks:
         _set_ticks(
@@ -154,9 +159,16 @@ def plot(
             xstep=xstep,
             ystep=ystep,
         )
+
+        ax.yaxis.label.set_size(fontsize)  # Set y-axis label font size
+        ax.xaxis.label.set_size(fontsize)  # Set x-axis label font size
+
     else:
         plt.xticks([])
         plt.yticks([])
+
+    for label in ax.get_xticklabels() + ax.get_yticklabels():
+        label.set_fontsize(fontsize)  # Set to desired font size
 
     if domain:
         x = np.linspace(domain[0], domain[1], int(2**12))
@@ -173,7 +185,7 @@ def plot(
         for f, label in zip(functions, fn_labels):
             ax.plot(x, f(x), lw=lw, alpha=alpha, label=label)
 
-        ax.legend(fontsize=16)
+        ax.legend(fontsize=fontsize)
 
     else:
         for f in functions:
