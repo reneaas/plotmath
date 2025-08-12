@@ -1,5 +1,5 @@
-# `mathplot`
-`mathplot` is a Python package to automatically create textbook graphs of mathematical functions. 
+# `plotmath`
+`plotmath` is a Python package to automatically create textbook graphs of mathematical functions. 
 
 ## Basic examples
 
