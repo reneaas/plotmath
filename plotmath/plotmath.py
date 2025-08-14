@@ -83,9 +83,6 @@ def _get_figures_and_axes(n, m, figsize):
         ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
         ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False)
 
-        ax.set_xlabel(r"$x$", fontsize=16, loc="right")
-        ax.set_ylabel(r"$y$", fontsize=16, loc="top", rotation="horizontal")
-
     return figs, axes
 
 
@@ -144,11 +141,23 @@ def plot(
     domain=False,
     fontsize=20,
     figsize=None,
+    xlabel=None,
+    ylabel=None,
 ):
     fig, ax = _get_figure_and_axis()
 
     if figsize is not None:
         fig.set_size_inches(figsize)
+
+    if xlabel is None:
+        xlabel = r"$x$"
+
+    ax.set_xlabel(xlabel, fontsize=fontsize, loc="right")
+
+    if ylabel is None:
+        ylabel = r"$y$"
+
+    ax.set_ylabel(ylabel, fontsize=fontsize, loc="top", rotation="horizontal")
 
     if ticks:
         _set_ticks(
