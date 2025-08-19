@@ -125,7 +125,7 @@ def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes):
     return axes
 
 
-def annotate(xy, xytext, s, fontsize=20):
+def annotate(xy, xytext, s, arc=0.3, fontsize=20):
     ax = plt.gca()
     ax.annotate(
         text=s,
@@ -137,7 +137,7 @@ def annotate(xy, xytext, s, fontsize=20):
             lw=2,
             color="black",
             alpha=0.7,
-            connectionstyle="arc3,rad=-0.3",
+            connectionstyle=f"arc3,rad={arc}",
         ),
         bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="black", lw=1.5),
         horizontalalignment="left",
