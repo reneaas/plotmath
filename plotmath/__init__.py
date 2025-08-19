@@ -7,6 +7,8 @@ from .plotmath import (
     multiplot,
     gca,
     COLORS,
+    make_bar,
+    annotate,
 )
 
 __all__ = [
@@ -18,4 +20,6 @@ __all__ = [
     "multiplot",
     "gca",
     "COLORS",
+    "make_bar",
+    "annotate",
 ]

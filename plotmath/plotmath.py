@@ -125,6 +125,50 @@ def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes):
     return axes
 
 
+def annotate(xy, xytext, s, fontsize=20):
+    ax = plt.gca()
+    ax.annotate(
+        text=s,
+        xy=xy,
+        xytext=xytext,
+        fontsize=fontsize,
+        arrowprops=dict(
+            arrowstyle="->",
+            lw=2,
+            color="black",
+            alpha=0.7,
+            connectionstyle="arc3,rad=-0.3",
+        ),
+        bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="black", lw=1.5),
+        horizontalalignment="left",
+        verticalalignment="center",
+    )
+
+
+def make_bar(xy, length, orientation):
+    x, y = xy
+
+    if orientation == "horizontal":
+        plt.annotate(
+            "",
+            xy=xy,
+            xycoords="data",
+            xytext=(x + length, y),
+            textcoords="data",
+            arrowprops=dict(arrowstyle="|-|,widthA=0.5,widthB=0.5", color="black"),
+        )
+
+    elif orientation == "vertical":
+        plt.annotate(
+            "",
+            xy=xy,
+            xycoords="data",
+            xytext=(x, y + length),
+            textcoords="data",
+            arrowprops=dict(arrowstyle="|-|,widthA=0.5,widthB=0.5", color="black"),
+        )
+
+
 def plot(
     functions,
     fn_labels=True,
