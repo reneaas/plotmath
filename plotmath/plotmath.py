@@ -271,6 +271,7 @@ def multiplot(
     cols=2,
     figsize=(8, 6),
     lw=2.5,
+    fontsize=20,
 ):
     figs, axes = _get_figures_and_axes(rows, cols, figsize)
 
@@ -305,6 +306,8 @@ def multiplot(
     for ax in axes.flat:
         ax.set_ylim(ymin, ymax)
         ax.set_xlim(xmin, xmax)
+        ax.set_xlabel(r"$x$", fontsize=fontsize, loc="right")
+        ax.set_ylabel(r"$y$", fontsize=fontsize, loc="top", rotation="horizontal")
 
     if grid:
         for ax in axes.flat:
