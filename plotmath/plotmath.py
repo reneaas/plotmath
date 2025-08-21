@@ -103,7 +103,7 @@ def _set_ticks(xmin, xmax, ymin, ymax, xstep, ystep):
     return None
 
 
-def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes):
+def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes, fontsize=20):
     xticks = list(np.arange(xmin, xmax, xstep))
     if 0 in xticks:
         xticks.remove(0)
@@ -117,10 +117,10 @@ def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes):
 
     for ax in axes.flat:
         ax.set_xticks(xticks)
-        ax.set_xticklabels(xticklabels, fontsize=16)
+        ax.set_xticklabels(xticklabels, fontsize=fontsize)
 
         ax.set_yticks(yticks)
-        ax.set_yticklabels(yticklabels, fontsize=16)
+        ax.set_yticklabels(yticklabels, fontsize=fontsize)
 
     return axes
 
@@ -301,7 +301,7 @@ def multiplot(
 
     for f, ax, label in zip(functions, axes.flat, fn_labels):
         ax.plot(x, f(x), lw=lw, alpha=alpha, label=label)
-        ax.legend(fontsize=16)
+        ax.legend(fontsize=fontsize)
 
     for ax in axes.flat:
         ax.set_ylim(ymin, ymax)
