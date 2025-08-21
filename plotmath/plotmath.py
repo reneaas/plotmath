@@ -277,9 +277,9 @@ def multiplot(
 
     if ticks:
         axes = _set_multiple_ticks(
-            xmin=xmin,
+            xmin=xmin + 1,
             xmax=xmax,
-            ymin=ymin,
+            ymin=ymin + 1,
             ymax=ymax,
             xstep=xstep,
             ystep=ystep,
