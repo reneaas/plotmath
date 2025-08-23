@@ -417,7 +417,6 @@ def histogram(
                 fontsize=fontsize,
                 rotation=0,
                 loc="top",
-                horizontalalignment="left",
             )
         else:
             ax.set_ylabel(
@@ -425,7 +424,6 @@ def histogram(
                 fontsize=fontsize,
                 rotation=0,
                 loc="top",
-                horizontalalignment="left",
             )
 
     if xlabel:
