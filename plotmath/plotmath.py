@@ -326,7 +326,28 @@ def savefig(dirname, fname, transparent=True):
     return None
 
 
+# Legacy function
 def plot_polygon(
+    *points,
+    ax=None,
+    color=blue,
+    alpha=0.05,
+    show_vertices=False,
+    ls="-",
+    edges=True,
+):
+    return polygon(
+        *points,
+        ax=ax,
+        color=color,
+        alpha=alpha,
+        show_vertices=show_vertices,
+        ls=ls,
+        edges=edges,
+    )
+
+
+def polygon(
     *points,
     ax=None,
     color=blue,
