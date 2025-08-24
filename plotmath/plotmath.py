@@ -299,9 +299,10 @@ def multiplot(
     else:
         fn_labels = [f"${label}$" for label in fn_labels]
 
-    for f, ax, label in zip(functions, axes.flat, fn_labels):
-        ax.plot(x, f(x), lw=lw, alpha=alpha, label=label)
-        ax.legend(fontsize=fontsize)
+    if functions != []:
+        for f, ax, label in zip(functions, axes.flat, fn_labels):
+            ax.plot(x, f(x), lw=lw, alpha=alpha, label=label)
+            ax.legend(fontsize=fontsize)
 
     for ax in axes.flat:
         ax.set_ylim(ymin, ymax)
