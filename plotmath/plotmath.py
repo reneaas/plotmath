@@ -101,40 +101,108 @@ def _auto_y_limits(
     xdata=None,
     ydata=None,
     samples: int = 2048,
-    clip_percentile: float = 0.0,
+    clip_percentile: float = 1.0,
     pad: float = 0.05,
 ):
-    """Compute robust y-limits from functions and/or data over [xmin, xmax]."""
-    ys = []
+    """Compute robust y-limits using adaptive refinement and robust clipping."""
 
-    # Evaluate functions on a dense grid (vectorized if possible)
+    def _eval_vectorized(f, xs):
+        try:
+            y = f(xs)
+            y = np.asarray(y, dtype=float)
+            if y.shape != xs.shape:
+                raise ValueError("shape mismatch")
+            return y
+        except Exception:
+            # Fallback to scalar-safe evaluation
+            out = []
+            for x in xs:
+                try:
+                    yv = f(float(x))
+                    yv = float(np.asarray(yv).ravel()[0])
+                except Exception:
+                    yv = np.nan
+                out.append(yv)
+            return np.asarray(out, dtype=float)
+
+    def _adaptive_collect(f, a, b, max_samples=8192, base_points=65, rel_tol=0.05):
+        # Start with a coarse uniform grid
+        xs = np.linspace(a, b, int(base_points))
+        ys = _eval_vectorized(f, xs)
+
+        # Replace non-finite values with NaN explicitly
+        finite_mask = np.isfinite(ys)
+
+        def refine(xs, ys, finite_mask):
+            # Identify intervals to refine: gaps (non-finite neighbors) or large jumps
+            bad_idx = []
+            # Robust scale (MAD) to detect sharp changes
+            finite_ys = ys[finite_mask]
+            if finite_ys.size >= 5:
+                med = np.median(finite_ys)
+                mad = np.median(np.abs(finite_ys - med))
+                scale = max(mad * 1.4826, np.std(finite_ys), 1.0)
+            else:
+                scale = 1.0
+
+            for i in range(len(xs) - 1):
+                y0, y1 = ys[i], ys[i + 1]
+                if not np.isfinite(y0) or not np.isfinite(y1):
+                    bad_idx.append(i)
+                    continue
+                # linear expectation at midpoint for a uniform grid segment
+                # A large deviation indicates curvature/asymptote
+                # Approximate by jump magnitude
+                jump = abs(y1 - y0)
+                if jump > rel_tol * scale:
+                    bad_idx.append(i)
+
+            if not bad_idx:
+                return xs, ys, finite_mask, []
+
+            new_xs = 0.5 * (xs[np.array(bad_idx)] + xs[np.array(bad_idx) + 1])
+            new_ys = _eval_vectorized(f, new_xs)
+
+            xs_aug = np.concatenate([xs, new_xs])
+            ys_aug = np.concatenate([ys, new_ys])
+            finite_aug = np.isfinite(ys_aug)
+
+            # sort by x
+            order = np.argsort(xs_aug)
+            return xs_aug[order], ys_aug[order], finite_aug[order], new_xs
+
+        added = 1
+        while added and xs.size < max_samples:
+            xs, ys, finite_mask, new_xs = refine(xs, ys, finite_mask)
+            added = len(new_xs)
+
+        return ys[np.isfinite(ys)]
+
+    ys_all = []
+
+    # Collect from functions with adaptive refinement
     if functions:
-        xs = np.linspace(xmin, xmax, int(samples))
         for f in functions:
             try:
-                y = f(xs)
+                y_fin = _adaptive_collect(f, xmin, xmax)
             except Exception:
-                try:
-                    y = np.array([f(x) for x in xs])
-                except Exception:
-                    continue
-            y = np.asarray(y, dtype=float)
-            y = y[np.isfinite(y)]
-            if y.size:
-                ys.append(y)
+                y_fin = np.array([], dtype=float)
+            if y_fin.size:
+                ys_all.append(y_fin)
 
     # Include raw data if provided
     if ydata is not None:
         yarr = np.asarray(ydata, dtype=float)
         yarr = yarr[np.isfinite(yarr)]
         if yarr.size:
-            ys.append(yarr)
+            ys_all.append(yarr)
 
-    if not ys:
+    if not ys_all:
         return (-1.0, 1.0)
 
-    all_y = np.concatenate(ys)
+    all_y = np.concatenate(ys_all)
 
+    # Robust clipping to reduce asymptote influence
     if clip_percentile and 0 < clip_percentile < 50:
         low = np.percentile(all_y, clip_percentile)
         high = np.percentile(all_y, 100 - clip_percentile)
@@ -338,7 +406,6 @@ def plot(
     xdata=None,
     ydata=None,
     max_ticks: int = 18,
-    clip_percentile: float = 0.5,
 ):
     fig, ax = _get_figure_and_axis()
 
@@ -373,7 +440,7 @@ def plot(
             xdata=xdata,
             ydata=ydata,
             samples=2048,
-            clip_percentile=clip_percentile,
+            clip_percentile=0.5,
             pad=0.05,
         )
         if ymin is None:
