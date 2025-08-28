@@ -92,266 +92,6 @@ def _generate_ticks(vmin: float, vmax: float, step: float) -> list:
     return list(np.round(ticks, 12))
 
 
-# --- Auto limits ----------------------------------------------------------
-def _auto_y_limits(
-    functions,
-    xmin,
-    xmax,
-    *,
-    xdata=None,
-    ydata=None,
-    samples: int = 2048,
-    clip_percentile: float = 1.0,
-    pad: float = 0.05,
-):
-    """Compute robust y-limits prioritizing local extrema detection.
-
-    Strategy:
-    1) Try to locate local minima/maxima via derivative sign changes and refine with
-       a derivative-based bisection. Use these extrema + endpoints to set limits.
-    2) If no extrema found (monotone or noisy), fallback to adaptive refinement
-       with robust clipping.
-    """
-
-    def _eval_vectorized(f, xs):
-        try:
-            y = f(xs)
-            y = np.asarray(y, dtype=float)
-            if y.shape != xs.shape:
-                raise ValueError("shape mismatch")
-            return y
-        except Exception:
-            # Fallback to scalar-safe evaluation
-            out = []
-            for x in xs:
-                try:
-                    yv = f(float(x))
-                    yv = float(np.asarray(yv).ravel()[0])
-                except Exception:
-                    yv = np.nan
-                out.append(yv)
-            return np.asarray(out, dtype=float)
-
-    def _derivative_at(f, x, span):
-        # Central difference with adaptive step size
-        h = max(1e-6 * (1.0 + abs(x)), span * 1e-6)
-        for _ in range(3):
-            try:
-                y1 = f(x + h)
-                y2 = f(x - h)
-                y1 = float(np.asarray(y1).ravel()[0])
-                y2 = float(np.asarray(y2).ravel()[0])
-                if np.isfinite(y1) and np.isfinite(y2):
-                    return (y1 - y2) / (2.0 * h)
-            except Exception:
-                pass
-            h *= 10.0
-        return np.nan
-
-    def _refine_derivative_root(f, a, b):
-        span = xmax - xmin
-        fa = _derivative_at(f, a, span)
-        fb = _derivative_at(f, b, span)
-        if not (np.isfinite(fa) and np.isfinite(fb)):
-            return None
-        if fa == 0.0:
-            return a
-        if fb == 0.0:
-            return b
-        if fa * fb > 0:
-            return None
-        lo, hi = a, b
-        for _ in range(30):
-            mid = 0.5 * (lo + hi)
-            fm = _derivative_at(f, mid, span)
-            if not np.isfinite(fm):
-                # Nudge slightly
-                mid = np.nextafter(mid, hi)
-                fm = _derivative_at(f, mid, span)
-                if not np.isfinite(fm):
-                    break
-            if abs(hi - lo) <= 1e-9 * max(1.0, abs(mid)):
-                return mid
-            if fa * fm <= 0:
-                hi, fb = mid, fm
-            else:
-                lo, fa = mid, fm
-        return mid
-
-    def _adaptive_collect(f, a, b, max_samples=8192, base_points=65, rel_tol=0.05):
-        # Start with a coarse uniform grid
-        xs = np.linspace(a, b, int(base_points))
-        ys = _eval_vectorized(f, xs)
-
-        # Replace non-finite values with NaN explicitly
-        finite_mask = np.isfinite(ys)
-
-        def refine(xs, ys, finite_mask):
-            # Identify intervals to refine: gaps (non-finite neighbors) or large jumps
-            bad_idx = []
-            # Robust scale (MAD) to detect sharp changes
-            finite_ys = ys[finite_mask]
-            if finite_ys.size >= 5:
-                med = np.median(finite_ys)
-                mad = np.median(np.abs(finite_ys - med))
-                scale = max(mad * 1.4826, np.std(finite_ys), 1.0)
-            else:
-                scale = 1.0
-
-            for i in range(len(xs) - 1):
-                y0, y1 = ys[i], ys[i + 1]
-                if not np.isfinite(y0) or not np.isfinite(y1):
-                    bad_idx.append(i)
-                    continue
-                # linear expectation at midpoint for a uniform grid segment
-                # A large deviation indicates curvature/asymptote
-                # Approximate by jump magnitude
-                jump = abs(y1 - y0)
-                if jump > rel_tol * scale:
-                    bad_idx.append(i)
-
-            if not bad_idx:
-                return xs, ys, finite_mask, []
-
-            new_xs = 0.5 * (xs[np.array(bad_idx)] + xs[np.array(bad_idx) + 1])
-            new_ys = _eval_vectorized(f, new_xs)
-
-            xs_aug = np.concatenate([xs, new_xs])
-            ys_aug = np.concatenate([ys, new_ys])
-            finite_aug = np.isfinite(ys_aug)
-
-            # sort by x
-            order = np.argsort(xs_aug)
-            return xs_aug[order], ys_aug[order], finite_aug[order], new_xs
-
-        added = 1
-        while added and xs.size < max_samples:
-            xs, ys, finite_mask, new_xs = refine(xs, ys, finite_mask)
-            added = len(new_xs)
-
-        return ys[np.isfinite(ys)]
-
-    ys_all = []
-
-    # First attempt: extrema via derivative sign changes and refinement
-    if functions:
-        for f in functions:
-            try:
-                # Coarse sampling to find sign changes of gradient
-                N = 257
-                xs = np.linspace(xmin, xmax, N)
-                ys = _eval_vectorized(f, xs)
-                finite = np.isfinite(ys)
-                # Use forward differences for gradient sign
-                grad = np.diff(ys)
-                # Identify indices where grad changes sign (pos->neg or neg->pos)
-                idxs = []
-                for i in range(len(grad) - 1):
-                    g0, g1 = grad[i], grad[i + 1]
-                    if not (np.isfinite(g0) and np.isfinite(g1)):
-                        continue
-                    if g0 == 0 or g1 == 0 or g0 * g1 < 0:
-                        idxs.append(i + 1)
-                cand_y = []
-                for i in idxs:
-                    a, b = xs[max(0, i - 1)], xs[min(len(xs) - 1, i + 1)]
-                    if a >= b:
-                        continue
-                    xr = _refine_derivative_root(f, a, b)
-                    if xr is None:
-                        continue
-                    try:
-                        yr = f(xr)
-                        yr = float(np.asarray(yr).ravel()[0])
-                        if np.isfinite(yr):
-                            cand_y.append(yr)
-                    except Exception:
-                        pass
-                # Always include endpoints if finite
-                for x_end in (xmin, xmax):
-                    try:
-                        y_end = f(x_end)
-                        y_end = float(np.asarray(y_end).ravel()[0])
-                        if np.isfinite(y_end):
-                            cand_y.append(y_end)
-                    except Exception:
-                        pass
-            except Exception:
-                cand_y = []
-            if cand_y:
-                ys_all.append(np.asarray(cand_y, dtype=float))
-
-    # Include raw data if provided
-    if ydata is not None:
-        yarr = np.asarray(ydata, dtype=float)
-        yarr = yarr[np.isfinite(yarr)]
-        if yarr.size:
-            ys_all.append(yarr)
-
-    if ys_all:
-        # Use extrema + endpoints + data
-        all_y = np.concatenate(ys_all)
-        y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
-    else:
-        # Fallback: adaptive refinement with robust clipping
-        ys_all_fb = []
-        if functions:
-            for f in functions:
-                try:
-                    y_fin = _adaptive_collect(f, xmin, xmax)
-                except Exception:
-                    y_fin = np.array([], dtype=float)
-                if y_fin.size:
-                    ys_all_fb.append(y_fin)
-        if ydata is not None:
-            yarr = np.asarray(ydata, dtype=float)
-            yarr = yarr[np.isfinite(yarr)]
-            if yarr.size:
-                ys_all_fb.append(yarr)
-        if not ys_all_fb:
-            return (-1.0, 1.0)
-        all_y = np.concatenate(ys_all_fb)
-        if clip_percentile and 0 < clip_percentile < 50:
-            low = np.percentile(all_y, clip_percentile)
-            high = np.percentile(all_y, 100 - clip_percentile)
-            y_min, y_max = float(low), float(high)
-        else:
-            y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
-
-    if not np.isfinite(y_min) or not np.isfinite(y_max):
-        return (-1.0, 1.0)
-    if y_max == y_min:
-        delta = max(1.0, abs(y_min) * 0.1)
-        y_min, y_max = y_min - delta, y_max + delta
-
-    span = y_max - y_min
-    if span <= 0:
-        y_min -= 1.0
-        y_max += 1.0
-    else:
-        margin = pad * span
-        y_min -= margin
-        y_max += margin
-
-    return (y_min, y_max)
-
-
-def _auto_x_limits(xdata, pad: float = 0.05):
-    """Compute x-limits from xdata with small relative padding."""
-    xarr = np.asarray(xdata, dtype=float)
-    xarr = xarr[np.isfinite(xarr)]
-    if xarr.size == 0:
-        return (-6.0, 6.0)
-    x_min = float(np.min(xarr))
-    x_max = float(np.max(xarr))
-    if x_max == x_min:
-        delta = max(1.0, abs(x_min) * 0.1)
-        return (x_min - delta, x_max + delta)
-    span = x_max - x_min
-    margin = pad * span
-    return (x_min - margin, x_max + margin)
-
-
 def _get_figure_and_axis():
 
     fig, ax = plt.subplots()
@@ -391,7 +131,7 @@ def _set_ticks(
     ymax,
     xstep=None,
     ystep=None,
-    max_ticks: int = 10,
+    max_ticks: int = 18,
 ):
 
     # Auto-compute steps if not provided
@@ -498,8 +238,8 @@ def plot(
     fn_labels=False,
     xmin=-6,
     xmax=6,
-    ymin=None,
-    ymax=None,
+    ymin=-6,
+    ymax=6,
     xstep=None,
     ystep=None,
     ticks=True,
@@ -530,36 +270,10 @@ def plot(
 
     ax.set_ylabel(ylabel, fontsize=fontsize, loc="top", rotation="horizontal")
 
-    # Determine x-range used for function sampling and plotting
-    if xdata is not None and ydata is not None:
-        # If user supplies data, infer x limits from data
-        xmin_use, xmax_use = _auto_x_limits(xdata)
-    elif domain:
-        xmin_use, xmax_use = domain[0], domain[1]
-    else:
-        xmin_use, xmax_use = xmin, xmax
-
-    # Auto y-limits if requested (pass None to either)
-    if ymin is None or ymax is None:
-        y_auto_min, y_auto_max = _auto_y_limits(
-            functions,
-            xmin_use,
-            xmax_use,
-            xdata=xdata,
-            ydata=ydata,
-            samples=2048,
-            clip_percentile=0.5,
-            pad=0.05,
-        )
-        if ymin is None:
-            ymin = y_auto_min
-        if ymax is None:
-            ymax = y_auto_max
-
     if ticks:
         _set_ticks(
-            xmin=xmin_use,
-            xmax=xmax_use,
+            xmin=xmin,
+            xmax=xmax,
             ymin=ymin,
             ymax=ymax,
             xstep=xstep,
@@ -580,7 +294,7 @@ def plot(
     if domain:
         x = np.linspace(domain[0], domain[1], int(2**12))
     else:
-        x = np.linspace(xmin_use, xmax_use, int(2**12))
+        x = np.linspace(xmin, xmax, int(2**12))
 
     if isinstance(fn_labels, bool) and fn_labels:  # If True, automatically set labels
         fn_labels = [f"${fn.__name__}$" for fn in functions]
@@ -599,9 +313,9 @@ def plot(
             ax.plot(x, f(x), lw=lw, alpha=alpha)
 
     plt.ylim(ymin, ymax)
-    plt.xlim(xmin_use, xmax_use)
+    plt.xlim(xmin, xmax)
 
-    if xdata is not None and ydata is not None:
+    if xdata and ydata:
         ax.plot(xdata, ydata, lw=lw, color=blue)
 
     if grid:
@@ -629,7 +343,7 @@ def multiplot(
     figsize=(8, 6),
     lw=2.5,
     fontsize=20,
-    max_ticks: int = 18,
+    max_ticks: int = 10,
 ):
     figs, axes = _get_figures_and_axes(rows, cols, figsize)
 
