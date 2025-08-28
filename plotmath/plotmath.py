@@ -338,6 +338,7 @@ def plot(
     xdata=None,
     ydata=None,
     max_ticks: int = 18,
+    clip_percentile: float = 0.5,
 ):
     fig, ax = _get_figure_and_axis()
 
@@ -372,7 +373,7 @@ def plot(
             xdata=xdata,
             ydata=ydata,
             samples=2048,
-            clip_percentile=0.5,
+            clip_percentile=clip_percentile,
             pad=0.05,
         )
         if ymin is None:
