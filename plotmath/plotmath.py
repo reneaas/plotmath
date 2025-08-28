@@ -54,6 +54,44 @@ def show():
     plt.show()
 
 
+# --- Tick helpers ---------------------------------------------------------
+def _nice_step(span: float, max_ticks: int = 10) -> float:
+    """Return a "nice" step size for a given span and desired max tick count.
+
+    Uses multiples of 1, 2, 2.5, or 5 times a power of 10.
+    """
+    if not np.isfinite(span) or span <= 0:
+        return 1.0
+    if max_ticks <= 0:
+        max_ticks = 10
+
+    raw = span / max_ticks
+    power = np.floor(np.log10(raw))
+    base = 10**power
+    for m in (1.0, 2.0, 2.5, 5.0):
+        step = m * base
+        if span / step <= max_ticks:
+            return step
+    # Fallback: next power of ten
+    return 10.0 * base
+
+
+def _generate_ticks(vmin: float, vmax: float, step: float) -> list:
+    """Generate tick positions from vmin to vmax with given step.
+
+    Ensures numerical stability and inclusive end when appropriate.
+    """
+    if step <= 0:
+        return []
+    start = np.ceil(vmin / step) * step
+    # Add a small epsilon to include the endpoint when close
+    eps = step * 1e-9
+    ticks = np.arange(start, vmax + eps, step)
+    # Ensure within bounds after floating errors
+    ticks = ticks[(ticks > vmin + eps) & (ticks < vmax - eps)]
+    return list(np.round(ticks, 12))
+
+
 def _get_figure_and_axis():
 
     fig, ax = plt.subplots()
@@ -86,34 +124,60 @@ def _get_figures_and_axes(n, m, figsize):
     return figs, axes
 
 
-def _set_ticks(xmin, xmax, ymin, ymax, xstep, ystep):
+def _set_ticks(
+    xmin,
+    xmax,
+    ymin,
+    ymax,
+    xstep=None,
+    ystep=None,
+    max_ticks: int = 10,
+):
 
-    xticks = list(np.arange(xmin + xstep, xmax, xstep))
+    # Auto-compute steps if not provided
+    if xstep is None:
+        xstep = _nice_step(float(xmax - xmin), int(max_ticks))
+    if ystep is None:
+        ystep = _nice_step(float(ymax - ymin), int(max_ticks))
 
-    if 0 in xticks:
-        xticks.remove(0)
+    xticks = _generate_ticks(xmin, xmax, xstep)
+    yticks = _generate_ticks(ymin, ymax, ystep)
+
+    # Omit 0 to avoid clutter at the origin
+    xticks = [t for t in xticks if not np.isclose(t, 0.0)]
+    yticks = [t for t in yticks if not np.isclose(t, 0.0)]
+
     plt.xticks(xticks, fontsize=16)
-
-    yticks = list(np.arange(ymin + ystep, ymax, ystep))
-
-    if 0 in yticks:
-        yticks.remove(0)
     plt.yticks(yticks, fontsize=16)
 
     return None
 
 
-def _set_multiple_ticks(xmin, xmax, ymin, ymax, xstep, ystep, axes, fontsize=20):
-    xticks = list(np.arange(xmin, xmax, xstep))
-    if 0 in xticks:
-        xticks.remove(0)
-    xticklabels = [f"${i}$" for i in xticks]
+def _set_multiple_ticks(
+    xmin,
+    xmax,
+    ymin,
+    ymax,
+    xstep,
+    ystep,
+    axes,
+    fontsize=20,
+    max_ticks: int = 10,
+):
+    # Auto-compute steps if not provided
+    if xstep is None:
+        xstep = _nice_step(float(xmax - xmin), int(max_ticks))
+    if ystep is None:
+        ystep = _nice_step(float(ymax - ymin), int(max_ticks))
 
-    yticks = list(np.arange(ymin, ymax, ystep))
-    if 0 in yticks:
-        yticks.remove(0)
+    xticks = _generate_ticks(xmin, xmax, xstep)
+    yticks = _generate_ticks(ymin, ymax, ystep)
 
-    yticklabels = [f"${i}$" for i in yticks]
+    xticks = [t for t in xticks if not np.isclose(t, 0.0)]
+    yticks = [t for t in yticks if not np.isclose(t, 0.0)]
+
+    xticklabels = [f"${t}$" for t in xticks]
+    yticklabels = [f"${t}$" for t in yticks]
 
     for ax in axes.flat:
         ax.set_xticks(xticks)
@@ -176,8 +240,8 @@ def plot(
     xmax=6,
     ymin=-6,
     ymax=6,
-    xstep=1,
-    ystep=1,
+    xstep=None,
+    ystep=None,
     ticks=True,
     alpha=None,
     grid=True,
@@ -189,6 +253,7 @@ def plot(
     ylabel=None,
     xdata=None,
     ydata=None,
+    max_ticks: int = 10,
 ):
     fig, ax = _get_figure_and_axis()
 
@@ -213,6 +278,7 @@ def plot(
             ymax=ymax,
             xstep=xstep,
             ystep=ystep,
+            max_ticks=max_ticks,
         )
 
         ax.yaxis.label.set_size(fontsize)  # Set y-axis label font size
@@ -267,8 +333,8 @@ def multiplot(
     xmax=6,
     ymin=-6,
     ymax=6,
-    xstep=1,
-    ystep=1,
+    xstep=None,
+    ystep=None,
     ticks=True,
     alpha=None,
     grid=True,
@@ -277,6 +343,7 @@ def multiplot(
     figsize=(8, 6),
     lw=2.5,
     fontsize=20,
+    max_ticks: int = 10,
 ):
     figs, axes = _get_figures_and_axes(rows, cols, figsize)
 
@@ -289,6 +356,7 @@ def multiplot(
             xstep=xstep,
             ystep=ystep,
             axes=axes,
+            max_ticks=max_ticks,
         )
     else:
         for ax in axes.flat:
