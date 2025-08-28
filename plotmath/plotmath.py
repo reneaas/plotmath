@@ -92,6 +92,90 @@ def _generate_ticks(vmin: float, vmax: float, step: float) -> list:
     return list(np.round(ticks, 12))
 
 
+# --- Auto limits ----------------------------------------------------------
+def _auto_y_limits(
+    functions,
+    xmin,
+    xmax,
+    *,
+    xdata=None,
+    ydata=None,
+    samples: int = 2048,
+    clip_percentile: float = 0.0,
+    pad: float = 0.05,
+):
+    """Compute robust y-limits from functions and/or data over [xmin, xmax]."""
+    ys = []
+
+    # Evaluate functions on a dense grid (vectorized if possible)
+    if functions:
+        xs = np.linspace(xmin, xmax, int(samples))
+        for f in functions:
+            try:
+                y = f(xs)
+            except Exception:
+                try:
+                    y = np.array([f(x) for x in xs])
+                except Exception:
+                    continue
+            y = np.asarray(y, dtype=float)
+            y = y[np.isfinite(y)]
+            if y.size:
+                ys.append(y)
+
+    # Include raw data if provided
+    if ydata is not None:
+        yarr = np.asarray(ydata, dtype=float)
+        yarr = yarr[np.isfinite(yarr)]
+        if yarr.size:
+            ys.append(yarr)
+
+    if not ys:
+        return (-1.0, 1.0)
+
+    all_y = np.concatenate(ys)
+
+    if clip_percentile and 0 < clip_percentile < 50:
+        low = np.percentile(all_y, clip_percentile)
+        high = np.percentile(all_y, 100 - clip_percentile)
+        y_min, y_max = float(low), float(high)
+    else:
+        y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
+
+    if not np.isfinite(y_min) or not np.isfinite(y_max):
+        return (-1.0, 1.0)
+    if y_max == y_min:
+        delta = max(1.0, abs(y_min) * 0.1)
+        y_min, y_max = y_min - delta, y_max + delta
+
+    span = y_max - y_min
+    if span <= 0:
+        y_min -= 1.0
+        y_max += 1.0
+    else:
+        margin = pad * span
+        y_min -= margin
+        y_max += margin
+
+    return (y_min, y_max)
+
+
+def _auto_x_limits(xdata, pad: float = 0.05):
+    """Compute x-limits from xdata with small relative padding."""
+    xarr = np.asarray(xdata, dtype=float)
+    xarr = xarr[np.isfinite(xarr)]
+    if xarr.size == 0:
+        return (-6.0, 6.0)
+    x_min = float(np.min(xarr))
+    x_max = float(np.max(xarr))
+    if x_max == x_min:
+        delta = max(1.0, abs(x_min) * 0.1)
+        return (x_min - delta, x_max + delta)
+    span = x_max - x_min
+    margin = pad * span
+    return (x_min - margin, x_max + margin)
+
+
 def _get_figure_and_axis():
 
     fig, ax = plt.subplots()
@@ -253,7 +337,7 @@ def plot(
     ylabel=None,
     xdata=None,
     ydata=None,
-    max_ticks: int = 10,
+    max_ticks: int = 18,
 ):
     fig, ax = _get_figure_and_axis()
 
@@ -270,10 +354,36 @@ def plot(
 
     ax.set_ylabel(ylabel, fontsize=fontsize, loc="top", rotation="horizontal")
 
+    # Determine x-range used for function sampling and plotting
+    if xdata is not None and ydata is not None:
+        # If user supplies data, infer x limits from data
+        xmin_use, xmax_use = _auto_x_limits(xdata)
+    elif domain:
+        xmin_use, xmax_use = domain[0], domain[1]
+    else:
+        xmin_use, xmax_use = xmin, xmax
+
+    # Auto y-limits if requested (pass None to either)
+    if ymin is None or ymax is None:
+        y_auto_min, y_auto_max = _auto_y_limits(
+            functions,
+            xmin_use,
+            xmax_use,
+            xdata=xdata,
+            ydata=ydata,
+            samples=2048,
+            clip_percentile=0.5,
+            pad=0.05,
+        )
+        if ymin is None:
+            ymin = y_auto_min
+        if ymax is None:
+            ymax = y_auto_max
+
     if ticks:
         _set_ticks(
-            xmin=xmin,
-            xmax=xmax,
+            xmin=xmin_use,
+            xmax=xmax_use,
             ymin=ymin,
             ymax=ymax,
             xstep=xstep,
@@ -294,7 +404,7 @@ def plot(
     if domain:
         x = np.linspace(domain[0], domain[1], int(2**12))
     else:
-        x = np.linspace(xmin, xmax, int(2**12))
+        x = np.linspace(xmin_use, xmax_use, int(2**12))
 
     if isinstance(fn_labels, bool) and fn_labels:  # If True, automatically set labels
         fn_labels = [f"${fn.__name__}$" for fn in functions]
@@ -313,9 +423,9 @@ def plot(
             ax.plot(x, f(x), lw=lw, alpha=alpha)
 
     plt.ylim(ymin, ymax)
-    plt.xlim(xmin, xmax)
+    plt.xlim(xmin_use, xmax_use)
 
-    if xdata and ydata:
+    if xdata is not None and ydata is not None:
         ax.plot(xdata, ydata, lw=lw, color=blue)
 
     if grid:
