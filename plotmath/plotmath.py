@@ -170,8 +170,8 @@ def make_bar(xy, length, orientation):
 
 
 def plot(
-    functions,
-    fn_labels=True,
+    functions=[],
+    fn_labels=False,
     xmin=-6,
     xmax=6,
     ymin=-6,
@@ -187,6 +187,8 @@ def plot(
     figsize=None,
     xlabel=None,
     ylabel=None,
+    xdata=None,
+    ydata=None,
 ):
     fig, ax = _get_figure_and_axis()
 
@@ -246,6 +248,9 @@ def plot(
 
     plt.ylim(ymin, ymax)
     plt.xlim(xmin, xmax)
+
+    if xdata and ydata:
+        ax.plot(xdata, ydata, lw=lw, color=blue)
 
     if grid:
         plt.grid(True, linestyle="--", alpha=0.6)
