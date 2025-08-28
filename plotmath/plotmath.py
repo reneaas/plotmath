@@ -104,7 +104,14 @@ def _auto_y_limits(
     clip_percentile: float = 1.0,
     pad: float = 0.05,
 ):
-    """Compute robust y-limits using adaptive refinement and robust clipping."""
+    """Compute robust y-limits prioritizing local extrema detection.
+
+    Strategy:
+    1) Try to locate local minima/maxima via derivative sign changes and refine with
+       a derivative-based bisection. Use these extrema + endpoints to set limits.
+    2) If no extrema found (monotone or noisy), fallback to adaptive refinement
+       with robust clipping.
+    """
 
     def _eval_vectorized(f, xs):
         try:
@@ -124,6 +131,52 @@ def _auto_y_limits(
                     yv = np.nan
                 out.append(yv)
             return np.asarray(out, dtype=float)
+
+    def _derivative_at(f, x, span):
+        # Central difference with adaptive step size
+        h = max(1e-6 * (1.0 + abs(x)), span * 1e-6)
+        for _ in range(3):
+            try:
+                y1 = f(x + h)
+                y2 = f(x - h)
+                y1 = float(np.asarray(y1).ravel()[0])
+                y2 = float(np.asarray(y2).ravel()[0])
+                if np.isfinite(y1) and np.isfinite(y2):
+                    return (y1 - y2) / (2.0 * h)
+            except Exception:
+                pass
+            h *= 10.0
+        return np.nan
+
+    def _refine_derivative_root(f, a, b):
+        span = xmax - xmin
+        fa = _derivative_at(f, a, span)
+        fb = _derivative_at(f, b, span)
+        if not (np.isfinite(fa) and np.isfinite(fb)):
+            return None
+        if fa == 0.0:
+            return a
+        if fb == 0.0:
+            return b
+        if fa * fb > 0:
+            return None
+        lo, hi = a, b
+        for _ in range(30):
+            mid = 0.5 * (lo + hi)
+            fm = _derivative_at(f, mid, span)
+            if not np.isfinite(fm):
+                # Nudge slightly
+                mid = np.nextafter(mid, hi)
+                fm = _derivative_at(f, mid, span)
+                if not np.isfinite(fm):
+                    break
+            if abs(hi - lo) <= 1e-9 * max(1.0, abs(mid)):
+                return mid
+            if fa * fm <= 0:
+                hi, fb = mid, fm
+            else:
+                lo, fa = mid, fm
+        return mid
 
     def _adaptive_collect(f, a, b, max_samples=8192, base_points=65, rel_tol=0.05):
         # Start with a coarse uniform grid
@@ -180,15 +233,53 @@ def _auto_y_limits(
 
     ys_all = []
 
-    # Collect from functions with adaptive refinement
+    # First attempt: extrema via derivative sign changes and refinement
     if functions:
         for f in functions:
             try:
-                y_fin = _adaptive_collect(f, xmin, xmax)
+                # Coarse sampling to find sign changes of gradient
+                N = 257
+                xs = np.linspace(xmin, xmax, N)
+                ys = _eval_vectorized(f, xs)
+                finite = np.isfinite(ys)
+                # Use forward differences for gradient sign
+                grad = np.diff(ys)
+                # Identify indices where grad changes sign (pos->neg or neg->pos)
+                idxs = []
+                for i in range(len(grad) - 1):
+                    g0, g1 = grad[i], grad[i + 1]
+                    if not (np.isfinite(g0) and np.isfinite(g1)):
+                        continue
+                    if g0 == 0 or g1 == 0 or g0 * g1 < 0:
+                        idxs.append(i + 1)
+                cand_y = []
+                for i in idxs:
+                    a, b = xs[max(0, i - 1)], xs[min(len(xs) - 1, i + 1)]
+                    if a >= b:
+                        continue
+                    xr = _refine_derivative_root(f, a, b)
+                    if xr is None:
+                        continue
+                    try:
+                        yr = f(xr)
+                        yr = float(np.asarray(yr).ravel()[0])
+                        if np.isfinite(yr):
+                            cand_y.append(yr)
+                    except Exception:
+                        pass
+                # Always include endpoints if finite
+                for x_end in (xmin, xmax):
+                    try:
+                        y_end = f(x_end)
+                        y_end = float(np.asarray(y_end).ravel()[0])
+                        if np.isfinite(y_end):
+                            cand_y.append(y_end)
+                    except Exception:
+                        pass
             except Exception:
-                y_fin = np.array([], dtype=float)
-            if y_fin.size:
-                ys_all.append(y_fin)
+                cand_y = []
+            if cand_y:
+                ys_all.append(np.asarray(cand_y, dtype=float))
 
     # Include raw data if provided
     if ydata is not None:
@@ -197,18 +288,35 @@ def _auto_y_limits(
         if yarr.size:
             ys_all.append(yarr)
 
-    if not ys_all:
-        return (-1.0, 1.0)
-
-    all_y = np.concatenate(ys_all)
-
-    # Robust clipping to reduce asymptote influence
-    if clip_percentile and 0 < clip_percentile < 50:
-        low = np.percentile(all_y, clip_percentile)
-        high = np.percentile(all_y, 100 - clip_percentile)
-        y_min, y_max = float(low), float(high)
-    else:
+    if ys_all:
+        # Use extrema + endpoints + data
+        all_y = np.concatenate(ys_all)
         y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
+    else:
+        # Fallback: adaptive refinement with robust clipping
+        ys_all_fb = []
+        if functions:
+            for f in functions:
+                try:
+                    y_fin = _adaptive_collect(f, xmin, xmax)
+                except Exception:
+                    y_fin = np.array([], dtype=float)
+                if y_fin.size:
+                    ys_all_fb.append(y_fin)
+        if ydata is not None:
+            yarr = np.asarray(ydata, dtype=float)
+            yarr = yarr[np.isfinite(yarr)]
+            if yarr.size:
+                ys_all_fb.append(yarr)
+        if not ys_all_fb:
+            return (-1.0, 1.0)
+        all_y = np.concatenate(ys_all_fb)
+        if clip_percentile and 0 < clip_percentile < 50:
+            low = np.percentile(all_y, clip_percentile)
+            high = np.percentile(all_y, 100 - clip_percentile)
+            y_min, y_max = float(low), float(high)
+        else:
+            y_min, y_max = float(np.min(all_y)), float(np.max(all_y))
 
     if not np.isfinite(y_min) or not np.isfinite(y_max):
         return (-1.0, 1.0)
@@ -521,7 +629,7 @@ def multiplot(
     figsize=(8, 6),
     lw=2.5,
     fontsize=20,
-    max_ticks: int = 10,
+    max_ticks: int = 18,
 ):
     figs, axes = _get_figures_and_axes(rows, cols, figsize)
 
