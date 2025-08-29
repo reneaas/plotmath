@@ -54,6 +54,10 @@ def show():
     plt.show()
 
 
+def close():
+    plt.close()
+
+
 # --- Tick helpers ---------------------------------------------------------
 def _nice_step(span: float, max_ticks: int = 10) -> float:
     """Return a "nice" step size for a given span and desired max tick count.

@@ -10,6 +10,7 @@ from .plotmath import (
     COLORS,
     make_bar,
     annotate,
+    close,
 )
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "COLORS",
     "make_bar",
     "annotate",
+    "close",
 ]
