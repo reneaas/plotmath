@@ -233,13 +233,58 @@ def make_bar(xy, length, orientation):
         )
 
 
+def _limits_from_data(xdata, ydata, pad_frac: float = 0.05, fallback=(-6, 6, -6, 6)):
+    """Compute nice axis limits from x/y data with padding.
+
+    - Filters out non-finite values.
+    - Adds a small fractional padding to both axes.
+    - If span is zero, expands by a reasonable amount.
+    """
+    try:
+        x = np.asarray(xdata)
+        y = np.asarray(ydata)
+    except Exception:
+        return fallback
+
+    mask = np.isfinite(x) & np.isfinite(y)
+    if mask.sum() == 0:
+        return fallback
+
+    x = x[mask]
+    y = y[mask]
+
+    xmin = float(np.min(x))
+    xmax = float(np.max(x))
+    ymin = float(np.min(y))
+    ymax = float(np.max(y))
+
+    # Handle degenerate ranges
+    if not np.isfinite(xmin) or not np.isfinite(xmax) or xmin == xmax:
+        cx = xmin if np.isfinite(xmin) else 0.0
+        pad = max(1.0, abs(cx) * 0.1)
+        xmin, xmax = cx - pad, cx + pad
+    else:
+        pad = (xmax - xmin) * pad_frac
+        xmin, xmax = xmin - pad, xmax + pad
+
+    if not np.isfinite(ymin) or not np.isfinite(ymax) or ymin == ymax:
+        cy = ymin if np.isfinite(ymin) else 0.0
+        pad = max(1.0, abs(cy) * 0.1)
+        ymin, ymax = cy - pad, cy + pad
+    else:
+        pad = (ymax - ymin) * pad_frac
+        ymin, ymax = ymin - pad, ymax + pad
+
+    return xmin, xmax, ymin, ymax
+
+
 def plot(
     functions=[],
     fn_labels=False,
-    xmin=-6,
-    xmax=6,
-    ymin=-6,
-    ymax=6,
+    xmin=None,
+    xmax=None,
+    ymin=None,
+    ymax=None,
     xstep=None,
     ystep=None,
     ticks=True,
@@ -270,12 +315,35 @@ def plot(
 
     ax.set_ylabel(ylabel, fontsize=fontsize, loc="top", rotation="horizontal")
 
+    # Determine effective axis limits
+    using_data = (xdata is not None) and (ydata is not None)
+
+    if using_data:
+        data_limits = _limits_from_data(xdata, ydata)
+    else:
+        data_limits = (-6, 6, -6, 6)
+
+    exmin = data_limits[0] if xmin is None else xmin
+    exmax = data_limits[1] if xmax is None else xmax
+    eymin = data_limits[2] if ymin is None else ymin
+    eymax = data_limits[3] if ymax is None else ymax
+
+    # If still None (no data and not provided), fallback to defaults
+    if exmin is None:
+        exmin = -6
+    if exmax is None:
+        exmax = 6
+    if eymin is None:
+        eymin = -6
+    if eymax is None:
+        eymax = 6
+
     if ticks:
         _set_ticks(
-            xmin=xmin,
-            xmax=xmax,
-            ymin=ymin,
-            ymax=ymax,
+            xmin=exmin,
+            xmax=exmax,
+            ymin=eymin,
+            ymax=eymax,
             xstep=xstep,
             ystep=ystep,
             max_ticks=max_ticks,
@@ -294,7 +362,7 @@ def plot(
     if domain:
         x = np.linspace(domain[0], domain[1], int(2**12))
     else:
-        x = np.linspace(xmin, xmax, int(2**12))
+        x = np.linspace(exmin, exmax, int(2**12))
 
     if isinstance(fn_labels, bool) and fn_labels:  # If True, automatically set labels
         fn_labels = [f"${fn.__name__}$" for fn in functions]
@@ -312,10 +380,10 @@ def plot(
         for f in functions:
             ax.plot(x, f(x), lw=lw, alpha=alpha)
 
-    plt.ylim(ymin, ymax)
-    plt.xlim(xmin, xmax)
+    plt.ylim(eymin, eymax)
+    plt.xlim(exmin, exmax)
 
-    if xdata and ydata:
+    if using_data:
         ax.plot(xdata, ydata, lw=lw, color=blue)
 
     if grid:
