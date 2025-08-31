@@ -343,6 +343,14 @@ def plot(
         eymax = 6
 
     if ticks:
+        # If ticks are auto and driven by data, force integer step sizes
+        if using_data:
+            if xstep is None:
+                span_x = float(exmax - exmin)
+                xstep = max(1, int(np.ceil(_nice_step(span_x, max_ticks))))
+            if ystep is None:
+                span_y = float(eymax - eymin)
+                ystep = max(1, int(np.ceil(_nice_step(span_y, max_ticks))))
         _set_ticks(
             xmin=exmin,
             xmax=exmax,
