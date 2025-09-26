@@ -177,6 +177,9 @@ def _set_multiple_ticks(
     xticks = _generate_ticks(xmin, xmax, xstep)
     yticks = _generate_ticks(ymin, ymax, ystep)
 
+    xticks = [int(t) if t.is_integer() else t for t in xticks]
+    yticks = [int(t) if t.is_integer() else t for t in yticks]
+
     xticks = [t for t in xticks if not np.isclose(t, 0.0)]
     yticks = [t for t in yticks if not np.isclose(t, 0.0)]
 
