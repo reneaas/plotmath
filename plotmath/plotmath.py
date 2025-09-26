@@ -174,8 +174,8 @@ def _set_multiple_ticks(
     if ystep is None:
         ystep = _nice_step(float(ymax - ymin), int(max_ticks))
 
-    xticks = _generate_ticks(xmin, xmax, xstep)
-    yticks = _generate_ticks(ymin, ymax, ystep)
+    xticks = _generate_ticks(xmin - 1, xmax, xstep)
+    yticks = _generate_ticks(ymin - 1, ymax, ystep)
 
     xticks = [int(t) if t.is_integer() else t for t in xticks]
     yticks = [int(t) if t.is_integer() else t for t in yticks]
