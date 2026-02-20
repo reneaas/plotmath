@@ -23,17 +23,31 @@ else:
 
 red = (220 / 255, 94 / 255, 139 / 255)
 blue = (0 / 255, 114 / 255, 178 / 255)
-orange = (220 / 255, 80 / 255, 20 / 255)
-# skyblue = "#56B4E9"
+orange = "#D95F02"
+green = "#1B9E77"
+purple = "#6A3D9A"
+yellow = "#B8860B"
+teal = "#009E73"
 skyblue = "#D3E6F6"  # udir blue
-# green = (0, 130 / 255, 90 / 255)
-# green = "#DDF1E7"  # udir green
-green = "#BBE3CE"  # udir green (deeper)
 common = "#26A69A"
 rare = "#1E88E5"
 epic = "#9C27B0"
 legendary = "#FFA000"
-colors = [blue, red, green, skyblue, orange, common, rare, epic, legendary]
+
+colors = [
+    blue,
+    red,
+    green,
+    purple,
+    teal,
+    orange,
+    yellow,
+    common,
+    rare,
+    epic,
+    legendary,
+    skyblue,
+]
 
 COLORS = {
     "blue": blue,
@@ -45,6 +59,9 @@ COLORS = {
     "rare": rare,
     "epic": epic,
     "legendary": legendary,
+    "purple": purple,
+    "teal": teal,
+    "yellow": yellow,
 }
 
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
