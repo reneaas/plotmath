@@ -23,6 +23,7 @@ else:
 
 red = (220 / 255, 94 / 255, 139 / 255)
 blue = (0 / 255, 114 / 255, 178 / 255)
+teal = "teal"
 orange = "#D95F02"
 green = "#0D8561"
 purple = "#6A3D9A"
@@ -36,9 +37,10 @@ legendary = "#FFA000"
 colors = [
     blue,
     red,
+    teal,
+    orange,
     green,
     purple,
-    orange,
     yellow,
     common,
     rare,
@@ -59,6 +61,7 @@ COLORS = {
     "legendary": legendary,
     "purple": purple,
     "yellow": yellow,
+    "teal": teal,
 }
 
 plt.rcParams["axes.prop_cycle"] = plt.cycler(color=colors)
