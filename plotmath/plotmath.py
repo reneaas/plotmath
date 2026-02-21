@@ -24,10 +24,9 @@ else:
 red = (220 / 255, 94 / 255, 139 / 255)
 blue = (0 / 255, 114 / 255, 178 / 255)
 orange = "#D95F02"
-green = "#1B9E77"
+green = "#0D8561"
 purple = "#6A3D9A"
 yellow = "#B8860B"
-teal = "#009E73"
 skyblue = "#D3E6F6"  # udir blue
 common = "#26A69A"
 rare = "#1E88E5"
@@ -39,7 +38,6 @@ colors = [
     red,
     green,
     purple,
-    teal,
     orange,
     yellow,
     common,
@@ -60,7 +58,6 @@ COLORS = {
     "epic": epic,
     "legendary": legendary,
     "purple": purple,
-    "teal": teal,
     "yellow": yellow,
 }
 
